@@ -75,7 +75,7 @@
         <argLine>-Xms512m -Xmx1g -Xss10m</argLine>
 
         <!-- Hier ggf. andere Startklasse anpassen! -->
-        <jar.start.class>ch.hslu.SW01.Fibonacci</jar.start.class>
+        <jar.start.class>ch.hslu.SW02.MyList</jar.start.class>
 
         <scm.group.name>oop</scm.group.name>
         <scm.developer.uid>zbgisler</scm.developer.uid>
