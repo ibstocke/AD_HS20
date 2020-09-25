@@ -30,17 +30,17 @@ public final class Fibonacci {
         StartTimer();
         lResFibNo = FibonacciRek01(iNthFibonacciNumber);
         StopTimer();
-        //m_LOGGER.info("{}-th Fibonacci number is: ({}) -- FibonacciRek01() exection time: {} ms", iNthFibonacciNumber, lResFibNo, m_lTime);
+        m_LOGGER.info("{}-th Fibonacci number is: ({}) -- FibonacciRek01() exection time: {} ms", iNthFibonacciNumber, lResFibNo, m_lTime);
 
         StartTimer();
         lResFibNo = FibonacciRek02(iNthFibonacciNumber);
         StopTimer();
-        //m_LOGGER.info("{}-th Fibonacci number is: ({}) -- FibonacciRek02() exection time: {} ms", iNthFibonacciNumber, lResFibNo, m_lTime);
+        m_LOGGER.info("{}-th Fibonacci number is: ({}) -- FibonacciRek02() exection time: {} ms", iNthFibonacciNumber, lResFibNo, m_lTime);
 
         StartTimer();
         lResFibNo = FibonacciIter(iNthFibonacciNumber);
         StopTimer();
-        //m_LOGGER.info("{}-th Fibonacci number is: ({}) -- FibonacciIter() exection time: {} ms", iNthFibonacciNumber, lResFibNo, m_lTime);
+        m_LOGGER.info("{}-th Fibonacci number is: ({}) -- FibonacciIter() exection time: {} ms", iNthFibonacciNumber, lResFibNo, m_lTime);
     }
 
     public static long FibonacciRek01(final int iNthFibonacciNumber) {
