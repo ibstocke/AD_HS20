@@ -9,9 +9,9 @@ package ch.hslu.SW02;
  *
  * @author Philipp
  */
-public interface IQueue<E> {
+public interface IQueue<T> {
 
-    public boolean add(E element);
+    public boolean add(T element);
 
     public Object getHeadElement();
 

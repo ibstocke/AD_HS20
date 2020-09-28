@@ -21,26 +21,23 @@ public final class Fibonacci {
     private static long m_lTime = 0;
 
     public static void main(final String[] args) {
-        if (args.length > 0) {
-            System.out.println("hello");
-        }
         final int iNthFibonacciNumber = 17; //94
         long lResFibNo = 0;
 
         StartTimer();
         lResFibNo = FibonacciRek01(iNthFibonacciNumber);
         StopTimer();
-        m_LOGGER.info("{}-th Fibonacci number is: ({}) -- FibonacciRek01() exection time: {} ms", iNthFibonacciNumber, lResFibNo, m_lTime);
+        m_LOGGER.info("{}-th Fibonacci number is: ({}) -- FibonacciRek01() execution  time: {} ms", iNthFibonacciNumber, lResFibNo, m_lTime);
 
         StartTimer();
         lResFibNo = FibonacciRek02(iNthFibonacciNumber);
         StopTimer();
-        m_LOGGER.info("{}-th Fibonacci number is: ({}) -- FibonacciRek02() exection time: {} ms", iNthFibonacciNumber, lResFibNo, m_lTime);
+        m_LOGGER.info("{}-th Fibonacci number is: ({}) -- FibonacciRek02() execution  time: {} ms", iNthFibonacciNumber, lResFibNo, m_lTime);
 
         StartTimer();
         lResFibNo = FibonacciIter(iNthFibonacciNumber);
         StopTimer();
-        m_LOGGER.info("{}-th Fibonacci number is: ({}) -- FibonacciIter() exection time: {} ms", iNthFibonacciNumber, lResFibNo, m_lTime);
+        m_LOGGER.info("{}-th Fibonacci number is: ({}) -- FibonacciIter()  execution  time: {} ms", iNthFibonacciNumber, lResFibNo, m_lTime);
     }
 
     public static long FibonacciRek01(final int iNthFibonacciNumber) {
