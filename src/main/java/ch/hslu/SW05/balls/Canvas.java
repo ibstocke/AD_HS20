@@ -22,42 +22,29 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.util.ArrayList;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 /**
- * Canvas is a class to allow for simple graphical drawing on a canvas. This is
- * a modification of the general purpose Canvas, specially made for the BlueJ
- * "shapes" example.
+ * Canvas is a class to allow for simple graphical drawing on a canvas. This is a modification of the general purpose
+ * Canvas, specially made for the BlueJ "shapes" example.
  *
  * @author Bruce Quig and Michael Kölling (mik)
  *
  * @version 2016.02.29
  */
-public final class Canvas {
+public final class Canvas extends JFrame implements MouseListener {
     // Note: The implementation of this class (specifically the handling of
     // shape identity and colors) is slightly more complex than necessary. This
     // is done on purpose to keep the interface and instance fields of the
     // shape objects in this project clean and simple for educational purposes.
 
-    private static Canvas canvasSingleton;
-
-    /**
-     * Factory method to get the canvas singleton object.
-     *
-     * @return singleton Canvas object.
-     */
-    public static Canvas getCanvas() {
-        if (canvasSingleton == null) {
-            canvasSingleton = new Canvas("Ball Demo", 600, 400,
-                    Color.white);
-        }
-        canvasSingleton.setVisible(true);
-        return canvasSingleton;
-    }
+    private static final long serialVersionUID = 1534533443;
 
     //  ----- instance part -----
     private final JFrame frame;
@@ -65,8 +52,12 @@ public final class Canvas {
     private Graphics2D graphic;
     private final Color backgroundColor;
     private Image canvasImage;
-    private final List<Object> objects;
-    private final HashMap<Object, ShapeDescription> shapes;
+    private final HashMap<Circle, ShapeDescription> shapes;
+
+    private final int canvasWith;
+    private final int canvasHeight;
+
+    private ReentrantLock lock = new ReentrantLock();
 
     /**
      * Create a Canvas.
@@ -77,44 +68,30 @@ public final class Canvas {
      * @param bgColor the desired background color of the canvas.
      */
     private Canvas(String title, int width, int height, Color bgColor) {
-        frame = new JFrame();
+        this.canvasWith = width;
+        this.canvasHeight = height;
+        this.backgroundColor = bgColor;
+        this.shapes = new HashMap<>();
+
         canvas = new CanvasPane();
-        frame.setContentPane(canvas);
+        canvas.setPreferredSize(new Dimension(width, height));
+
+        frame = new JFrame();
         frame.setTitle(title);
         frame.setLocation(30, 30);
-        canvas.setPreferredSize(new Dimension(width, height));
-        backgroundColor = bgColor;
+        frame.setContentPane(canvas);
         frame.pack();
-        objects = new ArrayList<>();
-        shapes = new HashMap<>();
+        frame.addMouseListener(this);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     /**
-     * Return the canvas width.
+     * Set the canvas visibility and brings canvas to the front of screen when made visible. This method can also be
+     * used to bring an already visible canvas to the front of other windows.
      *
-     * @return canvas width.
+     * @param visible boolean value representing the desired visibility of the canvas (true or false).
      */
-    public int getWidth() {
-        return canvas.getWidth();
-    }
-
-    /**
-     * Return the canvas height.
-     *
-     * @return canvas height.
-     */
-    public int getHeight() {
-        return canvas.getHeight();
-    }
-
-    /**
-     * Set the canvas visibility and brings canvas to the front of screen when
-     * made visible. This method can also be used to bring an already visible
-     * canvas to the front of other windows.
-     *
-     * @param visible boolean value representing the desired visibility of the
-     * canvas (true or false).
-     */
+    @Override
     public void setVisible(boolean visible) {
         if (graphic == null) {
             // first time: instantiate the offscreen image and fill it with
@@ -133,68 +110,18 @@ public final class Canvas {
      * Draw a given shape onto the canvas.
      *
      * @param referenceObject an object to define identity for this shape.
-     * @param color the color of the shape.
-     * @param shape the shape object to be drawn on the canvas.
      */
     // Note: this is a slightly backwards way of maintaining the shape
     // objects. It is carefully designed to keep the visible shape interfaces
     // in this project clean and simple for educational purposes.
-    public synchronized void draw(Object referenceObject, String color, Shape shape) {
-        objects.remove(referenceObject);   // just in case it was already there
-        objects.add(referenceObject);      // add at the end
-        shapes.put(referenceObject, new ShapeDescription(shape, color));
-        redraw();
+    public void updateShape(Circle referenceObject) {
+        shapes.put(referenceObject, new ShapeDescription(referenceObject.getShape(), referenceObject.getColor()));
+        //redraw();
     }
 
     /**
-     * Erase a given shape's from the screen.
-     *
-     * @param referenceObject the shape object to be erased.
-     */
-    public synchronized void erase(Object referenceObject) {
-        objects.remove(referenceObject);   // just in case it was already there
-        shapes.remove(referenceObject);
-        redraw();
-    }
-
-    /**
-     * Set the foreground color of the Canvas.
-     *
-     * @param colorString the new color for the foreground of the Canvas.
-     */
-    public void setForegroundColor(String colorString) {
-        switch (colorString) {
-            case "red":
-                graphic.setColor(new Color(235, 25, 25));
-                break;
-            case "black":
-                graphic.setColor(Color.black);
-                break;
-            case "blue":
-                graphic.setColor(new Color(30, 75, 220));
-                break;
-            case "yellow":
-                graphic.setColor(new Color(255, 230, 0));
-                break;
-            case "green":
-                graphic.setColor(new Color(80, 160, 60));
-                break;
-            case "magenta":
-                graphic.setColor(Color.magenta);
-                break;
-            case "white":
-                graphic.setColor(Color.white);
-                break;
-            default:
-                graphic.setColor(Color.black);
-                break;
-        }
-    }
-
-    /**
-     * Wait for a specified number of milliseconds before finishing. This
-     * provides an easy way to specify a small delay which can be used when
-     * producing animations.
+     * Wait for a specified number of milliseconds before finishing. This provides an easy way to specify a small delay
+     * which can be used when producing animations.
      *
      * @param milliseconds the number.
      */
@@ -206,13 +133,31 @@ public final class Canvas {
         }
     }
 
+    public synchronized void nextLifeCycle() {
+        synchronized (this) {
+            Iterator<Circle> itr = shapes.keySet().iterator();
+
+            while (itr.hasNext()) {
+                Circle nextCircle = itr.next();
+                nextCircle.nextLiveCycle();
+                if ((nextCircle.getY() + (double) nextCircle.getDiameter() / 2) >= this.canvasHeight) {
+                    itr.remove();
+                } else {
+                    updateShape(nextCircle);
+                }
+            }
+        }
+        redraw();
+
+    }
+
     /**
      * Redraw ell shapes currently on the Canvas.
      */
     private void redraw() {
         erase();
-        for (Object shape : objects) {
-            shapes.get(shape).draw(graphic);
+        for (ShapeDescription shapeDescription : shapes.values()) {
+            shapeDescription.draw(graphic);
         }
         canvas.repaint();
     }
@@ -228,10 +173,36 @@ public final class Canvas {
         graphic.setColor(original);
     }
 
+    @Override
+    public void mouseClicked(MouseEvent arg0) {
+
+    }
+
+    @Override
+    public void mousePressed(MouseEvent arg0) {
+        Circle c1 = new Circle(arg0.getX(), arg0.getY());
+        c1.setAlive();
+
+        synchronized (this) {
+            updateShape(c1);
+        }
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent arg0) {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent arg0) {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent arg0) {
+    }
+
     /**
-     * Inner class CanvasPane - the actual canvas component contained in the
-     * Canvas frame. This is essentially a JPanel with added capability to
-     * refresh the image drawn on it.
+     * Inner class CanvasPane - the actual canvas component contained in the Canvas frame. This is essentially a JPanel
+     * with added capability to refresh the image drawn on it.
      */
     private class CanvasPane extends JPanel {
 
@@ -244,35 +215,33 @@ public final class Canvas {
     }
 
     /**
-     * Inner class CanvasPane - the actual canvas component contained in the
-     * Canvas frame. This is essentially a JPanel with added capability to
-     * refresh the image drawn on it.
+     * Inner class CanvasPane - the actual canvas component contained in the Canvas frame. This is essentially a JPanel
+     * with added capability to refresh the image drawn on it.
      */
     private class ShapeDescription {
 
         private final Shape shape;
-        private final String colorString;
+        private final Color color;
 
-        public ShapeDescription(Shape shape, String color) {
+        public ShapeDescription(Shape shape, Color color) {
             this.shape = shape;
-            colorString = color;
+            this.color = color;
         }
 
         public void draw(Graphics2D graphic) {
-            setForegroundColor(colorString);
+            graphic.setColor(this.color);
             graphic.fill(shape);
         }
     }
 
-
-
-    public static void main(String[] args){
-        Canvas canvas = new Canvas("TEST", 600, 400, Color.white);
+    public static void main(String[] args) {
+        Canvas canvas = new Canvas("TEST", 1200, 800, Color.white);
         canvas.setVisible(true);
 
- 
-
-
-
+        for (;;) {
+            canvas.nextLifeCycle();
+            canvas.wait(10);
+        }
     }
+
 }

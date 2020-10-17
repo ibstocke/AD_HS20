@@ -53,7 +53,9 @@ public final class BankAccount {
      * @param amount Einzuzahlender Betrag
      */
     public void deposite(final int amount) {
-        this.balance += amount;
+        synchronized (this) {
+            this.balance += amount;
+        }
     }
 
     /**
@@ -63,7 +65,12 @@ public final class BankAccount {
      * @param amount zu überweisender Betrag.
      */
     public void transfer(final BankAccount target, final int amount) {
-        this.balance -= amount;
+        synchronized (this) {
+            int iNewBalance = this.balance - amount;
+            Thread.yield(); //this line is only for demonstration purpose; force scheduler to withdraw this running thread
+            this.balance = iNewBalance;
+        }
+
         target.deposite(amount);
     }
 }
