@@ -15,6 +15,8 @@
  */
 package ch.hslu.SW06.horseRace;
 
+import org.apache.logging.log4j.LogManager;
+
 /**
  * Eine Synchronisationshilfe, die es ermöglicht, einen oder mehrere Threads warten zu lassen, bis diese durch andere
  * Threads aufgeweckt werden. Latches sperren so lange, bis sie einmal ausgelöst werden. Danach sind sie frei
@@ -22,13 +24,47 @@ package ch.hslu.SW06.horseRace;
  */
 public class Latch implements Synch {
 
+    private static final org.apache.logging.log4j.Logger LOG = LogManager.getLogger(Latch.class);
+
+    private int m_iNoOfReadyHorses;
+    final private int m_iNoOfParticipatingHorses;
+
+    public Latch(int iNoOfParticipatingHorses) {
+        m_iNoOfParticipatingHorses = iNoOfParticipatingHorses;
+    }
+
     @Override
     public void acquire() throws InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        synchronized (this) {
+            m_iNoOfReadyHorses++;
+            this.wait();
+        }
     }
 
     @Override
     public void release() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        waitForAllHorsesReadyToRun();
+
+        synchronized (this) {
+            LOG.info("****** Start ******");
+            m_iNoOfReadyHorses = 0;
+            this.notifyAll();
+        }
+    }
+
+    private void waitForAllHorsesReadyToRun() {
+        while (!areAllHorsesReadyToRun()) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {
+                LOG.debug(ex);
+            }
+        }
+    }
+
+    private boolean areAllHorsesReadyToRun() {
+        synchronized (this) {
+            return m_iNoOfReadyHorses == m_iNoOfParticipatingHorses;
+        }
     }
 }

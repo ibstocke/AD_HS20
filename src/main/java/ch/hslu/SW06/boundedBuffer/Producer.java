@@ -40,8 +40,8 @@ public final class Producer implements Runnable {
     public void run() {
         for (int i = 0; i < maxRange; i++) {
             try {
-                sum += i;
-                queue.put(i);
+                this.sum += i;
+                this.queue.put(i);
             } catch (InterruptedException ex) {
                 return;
             }
@@ -54,6 +54,6 @@ public final class Producer implements Runnable {
      * @return Summe.
      */
     public long getSum() {
-        return sum;
+        return this.sum;
     }
 }

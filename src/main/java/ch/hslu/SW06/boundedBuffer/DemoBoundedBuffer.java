@@ -40,11 +40,12 @@ public final class DemoBoundedBuffer {
      * @throws InterruptedException wenn das warten unterbrochen wird.
      */
     public static void main(final String args[]) throws InterruptedException {
+        final int nPros = 8;
+        final int mCons = 7;
+
         final Random random = new Random();
-        final int nPros = 3;
         final Producer[] producers = new Producer[nPros];
         final ThreadGroup prosGroup = new ThreadGroup("Producer-Threads");
-        final int mCons = 2;
         final Consumer[] consumers = new Consumer[mCons];
         final ThreadGroup consGroup = new ThreadGroup("Consumer-Threads");
         final BoundedBuffer<Integer> queue = new BoundedBuffer<>(50);
@@ -56,9 +57,11 @@ public final class DemoBoundedBuffer {
             consumers[i] = new Consumer(queue);
             new Thread(consGroup, consumers[i], "Cons " + (char) (i + 65)).start();
         }
+
         while (prosGroup.activeCount() > 0) {
             Thread.yield();
         }
+
         TimeUnit.MILLISECONDS.sleep(100);
         consGroup.interrupt();
         int sumPros = 0;

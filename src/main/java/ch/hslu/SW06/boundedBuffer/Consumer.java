@@ -37,7 +37,7 @@ public final class Consumer implements Runnable {
     public void run() {
         while (true) {
             try {
-                sum += queue.get();
+                this.sum += this.queue.get();
             } catch (InterruptedException ex) {
                 return;
             }
@@ -50,6 +50,6 @@ public final class Consumer implements Runnable {
      * @return Summe.
      */
     public long getSum() {
-        return sum;
+        return this.sum;
     }
 }

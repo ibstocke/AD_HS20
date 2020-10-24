@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
  */
 public final class RaceHorse implements Runnable {
 
-    private static final Logger LOG = LogManager.getLogger(ch.hslu.SW06.horseRace.RaceHorse.class);
+    private static final Logger LOG = LogManager.getLogger(RaceHorse.class);
     private final Synch startSignal;
     private volatile Thread runThread;
     private final Random random;
@@ -41,15 +41,17 @@ public final class RaceHorse implements Runnable {
 
     @Override
     public void run() {
-        runThread = Thread.currentThread();
-        LOG.info("Rennpferd " + runThread.getName() + " geht in die Box.");
+        final String strHorseID = "Rennpferd " + Thread.currentThread().getName();
+        LOG.info(strHorseID + " geht in die Box.");
         try {
             startSignal.acquire();
-            LOG.info("Rennpferd " + runThread.getName() + " laeuft los...");
-            Thread.sleep(random.nextInt(3000));
+            LOG.info(strHorseID + " laeuft los...");
+            //wait at least 10 ms or have you ever seen a horse teleporting
+            Thread.sleep(random.nextInt(3000) + 10);
         } catch (InterruptedException ex) {
-            LOG.debug(ex);
+            LOG.info(strHorseID + " Rennabbruch..");
+            return;
         }
-        LOG.info("Rennpferd " + runThread.getName() + " ist im Ziel.");
+        LOG.info(strHorseID + " ist im Ziel.");
     }
 }

@@ -21,6 +21,7 @@ package ch.hslu.SW06.signal;
 public final class Semaphore {
 
     private int sema; // Semaphorenzähler
+    private final int limit; // maximale Anzahl der Passiersignale.
     private int count; // Anzahl der wartenden Threads.
 
     /**
@@ -34,14 +35,9 @@ public final class Semaphore {
      * Erzeugt ein Semaphore mit einem Initalwert für den Semaphorenzähler.
      *
      * @param permits Anzahl Passiersignale zur Initialisierung.
-     * @throws IllegalArgumentException wenn der Initalwert negativ ist.
      */
-    public Semaphore(final int permits) throws IllegalArgumentException {
-        if (permits < 0) {
-            throw new IllegalArgumentException(permits + " < 0");
-        }
-        sema = permits;
-        count = 0;
+    public Semaphore(final int permits) {
+        this(permits, Integer.MAX_VALUE);
     }
 
     /**
@@ -52,8 +48,21 @@ public final class Semaphore {
      * @throws IllegalArgumentException wenn Argumente ungültige Werte besitzen.
      */
     public Semaphore(final int permits, final int limit) throws IllegalArgumentException {
-        this(0);
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (permits < 0) {
+            throw new IllegalArgumentException("permits(" + permits + ") < 0");
+        }
+
+        if (limit < permits) {
+            throw new IllegalArgumentException("limit(" + limit + ") < permits(" + permits + ")");
+        }
+
+        this.sema = permits;
+        this.limit = limit;
+        this.count = 0;
+    }
+
+    public void acquire() throws InterruptedException {
+        acquire(1);
     }
 
     /**
@@ -62,22 +71,32 @@ public final class Semaphore {
      *
      * @throws java.lang.InterruptedException falls das Warten unterbrochen wird.
      */
-    public synchronized void acquire() throws InterruptedException {
-        while (sema == 0) {
-            count++;
+    public synchronized void acquire(int permits) throws InterruptedException {
+        while (sema < permits) {
+            this.count++;
             this.wait();
-            count--;
+            this.count--;
         }
-        sema--;
+        this.sema -= permits;
+    }
+
+    public void release() throws IllegalStateException {
+        release(1);
     }
 
     /**
      * Entspricht dem V() Verlassen (Freigeben) eines synchronisierten Bereiches, wobei ebenfalls mitgezählt wird, wie
      * oft der Bereich verlassen wird.
      */
-    public synchronized void release() {
-        sema++;
-        this.notifyAll();
+    public synchronized void release(int permits) throws IllegalStateException {
+        if (this.sema == 0) {
+            this.notifyAll();
+        }
+
+        if (this.sema + permits > this.limit) {
+            throw new IllegalStateException("sema(" + this.sema + permits + ") >= limit(" + this.limit + ")");
+        }
+        this.sema += permits;
     }
 
     /**
@@ -86,6 +105,6 @@ public final class Semaphore {
      * @return Anzahl wartende Threads.
      */
     public synchronized int pending() {
-        return count;
+        return this.count;
     }
 }

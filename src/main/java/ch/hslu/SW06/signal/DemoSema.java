@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 public final class DemoSema {
 
     private static final Logger LOG = LogManager.getLogger(DemoSema.class);
-    private static Semaphore sema = new Semaphore(3);
+    private static Semaphore sema = new Semaphore(5, 10);
 
     /**
      * Privater Konstruktor.
@@ -43,11 +43,11 @@ public final class DemoSema {
                 for (int j = 0; j < 5; j++) {
                     try {
                         LOG.info("Thread {} waits.", Thread.currentThread().getName());
-                        sema.acquire();
+                        sema.acquire(1);
                         LOG.info("Thread {} is in critical section.", Thread.currentThread().getName());
                         Thread.sleep(1000);   // Only 3 threads can get here at once
                         LOG.info("Thread {} leaves.", Thread.currentThread().getName());
-                        sema.release();
+                        sema.release(1);
                     } catch (InterruptedException ex) {
                         LOG.debug(ex.getMessage());
                     }

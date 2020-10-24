@@ -94,5 +94,5 @@ public interface Buffer<T> {
      *
      * @return Anzahl Elemente.
      */
-    boolean size();
+    int size();
 }

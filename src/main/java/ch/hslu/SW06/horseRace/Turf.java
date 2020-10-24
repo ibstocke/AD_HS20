@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
  */
 public final class Turf {
 
-    private static final Logger LOG = LogManager.getLogger(ch.hslu.SW06.horseRace.Turf.class);
+    private static final Logger LOG = LogManager.getLogger(RaceHorse.class);
 
     /**
      * Privater Konstruktor.
@@ -37,13 +37,37 @@ public final class Turf {
      * @param args not used.
      */
     public static void main(final String[] args) {
-        final Synch starterBox = new Latch();
-        Thread thread;
-        for (int i = 1; i < 6; i++) {
-            thread = new Thread(new RaceHorse(starterBox), "Horse " + i);
-            thread.start();
+        final int iNoOfRunningHorses = 6;
+        final Thread[] threads = new Thread[iNoOfRunningHorses];
+        final Synch starterBox = new Latch(iNoOfRunningHorses);
+
+        for (int i = 0; i < iNoOfRunningHorses; i++) {
+            final String strHorseID = "Horse " + Integer.toString(i + 1);
+            threads[i] = new Thread(new RaceHorse(starterBox), strHorseID);
+            threads[i].start();
         }
-        LOG.info("Start...");
+
         starterBox.release();
+
+        final boolean fSimRaceInterruption = false;
+        if (fSimRaceInterruption) {
+            try {
+                Thread.sleep(400);
+            } catch (InterruptedException ex) {
+                LOG.debug(ex);
+            }
+            for (Thread thread : threads) {
+                thread.interrupt();
+            }
+        }
+
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException ex) {
+                LOG.debug(ex);
+            }
+        }
+        LOG.info("****** Rennen beeendet ******");
     }
 }
