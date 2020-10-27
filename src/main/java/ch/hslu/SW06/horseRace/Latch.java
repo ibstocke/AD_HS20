@@ -15,6 +15,7 @@
  */
 package ch.hslu.SW06.horseRace;
 
+import java.util.concurrent.Semaphore;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -26,45 +27,33 @@ public class Latch implements Synch {
 
     private static final org.apache.logging.log4j.Logger LOG = LogManager.getLogger(Latch.class);
 
-    private int m_iNoOfReadyHorses;
+    private final Semaphore m_startBoxSema;
     final private int m_iNoOfParticipatingHorses;
 
     public Latch(int iNoOfParticipatingHorses) {
+        m_startBoxSema = new Semaphore(0);
         m_iNoOfParticipatingHorses = iNoOfParticipatingHorses;
     }
 
     @Override
     public void acquire() throws InterruptedException {
         synchronized (this) {
-            m_iNoOfReadyHorses++;
+            m_startBoxSema.release();
             this.wait();
         }
     }
 
     @Override
     public void release() {
-        waitForAllHorsesReadyToRun();
+        try {
+            m_startBoxSema.acquire(m_iNoOfParticipatingHorses);
+        } catch (InterruptedException ex) {
+            LOG.debug(ex);
+        }
 
         synchronized (this) {
             LOG.info("****** Start ******");
-            m_iNoOfReadyHorses = 0;
             this.notifyAll();
-        }
-    }
-
-    private void waitForAllHorsesReadyToRun() {
-        while (!areAllHorsesReadyToRun()) {
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException ex) {
-                LOG.debug(ex);
-            }
-        }
-    }
-
-    private boolean areAllHorsesReadyToRun() {
-        synchronized (this) {
-            return m_iNoOfReadyHorses == m_iNoOfParticipatingHorses;
         }
     }
 }

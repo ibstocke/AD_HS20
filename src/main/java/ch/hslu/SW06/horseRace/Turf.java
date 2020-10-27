@@ -37,7 +37,7 @@ public final class Turf {
      * @param args not used.
      */
     public static void main(final String[] args) {
-        final int iNoOfRunningHorses = 6;
+        final int iNoOfRunningHorses = 8;
         final Thread[] threads = new Thread[iNoOfRunningHorses];
         final Synch starterBox = new Latch(iNoOfRunningHorses);
 
