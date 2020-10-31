@@ -15,10 +15,11 @@
  */
 package ch.hslu.SW07.buffer;
 
-import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.*;
 
 /**
  * Puffer mit einer begrenzten Kapazität. Der Puffer ist thread sicher.
+ *
  * @param <T> Elememente des Buffers
  */
 public class BoundedBufferAdapter<T> {
@@ -27,106 +28,111 @@ public class BoundedBufferAdapter<T> {
 
     /**
      * Erzeugt einen Puffer mit bestimmter Kapazität.
+     *
      * @param n Kapazität des Puffers
      */
     public BoundedBufferAdapter(final int n) {
-        deque = null;
+        this.deque = new LinkedBlockingDeque<>(n);
     }
 
     /**
-     * Fügt ein Element in den Puffer ein, wenn dies möglich ist, wenn nicht muss der Schreiber
-     * warten.
+     * Fügt ein Element in den Puffer ein, wenn dies möglich ist, wenn nicht muss der Schreiber warten.
+     *
      * @param elem Element zum Einfügen.
      * @throws InterruptedException falls das Warten unterbrochen wird.
      */
     public void put(final T elem) throws InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        deque.put(elem);
     }
 
     /**
-     * Fügt ein Element am Anfang in den Puffer ein, wenn dies möglich ist, wenn nicht muss der
-     * Schreiber warten.
+     * Fügt ein Element am Anfang in den Puffer ein, wenn dies möglich ist, wenn nicht muss der Schreiber warten.
+     *
      * @param elem Element zum Einfügen.
      * @throws InterruptedException falls das Warten unterbrochen wird.
      */
     public void push(final T elem) throws InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        deque.push(elem);
     }
 
     /**
-     * Ein Element T speichern oder nach einem Timeout abbrechen. Falls der Puffer voll ist, warten
-     * bis ein Platz frei wird.
+     * Ein Element T speichern oder nach einem Timeout abbrechen. Falls der Puffer voll ist, warten bis ein Platz frei
+     * wird.
+     *
      * @param elem zu speicherndes Element.
      * @param millis Timeout bis zum Abbruch.
      * @return true, wenn Element gespeichert wurde, false, wenn Timeout eingetreten ist.
      * @throws InterruptedException falls das Warten unterbrochen wird.
      */
     public boolean put(final T elem, final long millis) throws InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return deque.offer(elem, millis, TimeUnit.MILLISECONDS);
     }
 
     /**
-     * Liest und entfernt ein Element aus dem Puffer, wenn dies möglich ist, wenn nicht muss der
-     * Leser warten.
+     * Liest und entfernt ein Element aus dem Puffer, wenn dies möglich ist, wenn nicht muss der Leser warten.
+     *
      * @return gelesenes Element.
      * @throws InterruptedException falls das Warten unterbrochen wird.
      */
     public T get() throws InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return deque.take();
     }
 
     /**
-     * Liest und entfernt ein Element am Anfang aus dem Puffer, wenn dies möglich ist, wenn nicht
-     * muss der Leser warten.
+     * Liest und entfernt ein Element am Anfang aus dem Puffer, wenn dies möglich ist, wenn nicht muss der Leser warten.
+     *
      * @return gelesenes Element.
      * @throws InterruptedException falls das Warten unterbrochen wird.
      */
     public T front() throws InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return deque.takeFirst();
     }
 
     /**
-     * Liest und entfernt ein Element am Ende aus dem Puffer, wenn dies möglich ist, wenn nicht muss
-     * der Leser warten.
+     * Liest und entfernt ein Element am Ende aus dem Puffer, wenn dies möglich ist, wenn nicht muss der Leser warten.
+     *
      * @return gelesenes Element.
      * @throws InterruptedException falls das Warten unterbrochen wird.
      */
     public T back() throws InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return deque.takeLast();
     }
 
     /**
-     * Liest und entfernt ein Element aus dem Puffer, wenn dies innert einer definierten Zeit
-     * möglich ist.
+     * Liest und entfernt ein Element aus dem Puffer, wenn dies innert einer definierten Zeit möglich ist.
+     *
      * @param millis Anzahl Millisekunden, bis das Warten beendet wird.
      * @return gelesenes Element wenn erfolgreich, sonst null.
      * @throws InterruptedException falls das Warten unterbrochen wird.
      */
     public T get(final long millis) throws InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return deque.poll(millis, TimeUnit.MILLISECONDS);
     }
 
     /**
      * Liefert true, wenn der Puffer leer ist.
+     *
      * @return true, wenn der Puffer leer ist.
      */
     public boolean empty() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return deque.isEmpty();
     }
 
     /**
      * Liefert true, wenn der Puffer voll ist.
+     *
      * @return true, wenn der Puffer voll ist.
      */
     public boolean full() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return false;
     }
 
     /**
      * Liefert die Anzahl Elemente im Puffer.
+     *
      * @return Anzahl Elemente im Puffer.
      */
     public int size() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return deque.size();
     }
 }

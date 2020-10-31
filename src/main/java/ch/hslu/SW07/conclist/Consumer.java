@@ -15,6 +15,7 @@
  */
 package ch.hslu.SW07.conclist;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -27,6 +28,7 @@ public final class Consumer implements Callable<Long> {
 
     /**
      * Erzeugt einen Konsumenten, der soviel Integer-Werte ausliest, wie er nur kann.
+     *
      * @param list Queue zum Lesen der Integer-Werte.
      */
     public Consumer(final List<Integer> list) {
@@ -35,11 +37,17 @@ public final class Consumer implements Callable<Long> {
 
     /**
      * Liefert die Summe aller ausgelesener Werte.
+     *
      * @return Summe.
      * @throws java.lang.Exception falls Ausnahmen passieren.
      */
     @Override
     public Long call() throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        long sum = 0;
+        Iterator<Integer> itr = list.iterator();
+        while (itr.hasNext()) {
+            sum += itr.next();
+        }
+        return sum;
     }
 }

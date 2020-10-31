@@ -16,6 +16,7 @@
 package ch.hslu.SW07.buffer;
 
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,25 +35,36 @@ public final class DemoBoundedBuffer {
 
     /**
      * Main-Demo.
+     *
      * @param args not used.
      * @throws InterruptedException wenn das warten unterbrochen wird.
      */
     public static void main(final String args[]) throws InterruptedException {
+        final int nPros = 8;
+        final int mCons = 7;
+
         final Random random = new Random();
-        final int nPros = 3;
         final Producer[] producers = new Producer[nPros];
-        final int mCons = 2;
+        final ThreadGroup prosGroup = new ThreadGroup("Producer-Threads");
         final Consumer[] consumers = new Consumer[mCons];
+        final ThreadGroup consGroup = new ThreadGroup("Consumer-Threads");
         final BoundedBufferAdapter<Integer> queue = new BoundedBufferAdapter<>(50);
         for (int i = 0; i < nPros; i++) {
             producers[i] = new Producer(queue, random.nextInt(10000));
-            // Threads starten...
+            new Thread(prosGroup, producers[i], "Prod  " + (char) (i + 65)).start();
         }
         for (int i = 0; i < mCons; i++) {
             consumers[i] = new Consumer(queue);
-            // Threads starten...
+            new Thread(consGroup, consumers[i], "Cons " + (char) (i + 65)).start();
         }
-        // ...warten bis alles fertig ist
+
+        while (prosGroup.activeCount() > 0) {
+            Thread.yield();
+        }
+
+        TimeUnit.MILLISECONDS.sleep(100);
+        consGroup.interrupt();
+
         int sumPros = 0;
         for (int i = 0; i < nPros; i++) {
             LOG.info("Prod " + (char) (i + 65) + " = " + producers[i].getSum());

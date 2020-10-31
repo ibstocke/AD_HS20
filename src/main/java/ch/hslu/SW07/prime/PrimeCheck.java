@@ -16,7 +16,10 @@
 package ch.hslu.SW07.prime;
 
 import java.math.BigInteger;
-import java.util.Random;
+import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,13 +42,28 @@ public final class PrimeCheck {
      * @param args not used.
      */
     public static void main(String[] args) {
-        int n = 1;
-        while (n <= 100) {
-            BigInteger bi = new BigInteger(1024, new Random());
-            if (bi.isProbablePrime(Integer.MAX_VALUE)) {
-                LOG.info(n + ": " + bi.toString().substring(0, 20) + "...");
-                n++;
-            }
+        final int iNoOfPrimesRequired = 100;
+        PrimeList primeList = new PrimeList(iNoOfPrimesRequired);
+
+        final int iCores = Runtime.getRuntime().availableProcessors();
+
+        final ExecutorService executor = Executors.newCachedThreadPool();
+        for (int i = 0; i < iCores; i++) {
+            executor.submit(new PrimeProducer(primeList));
         }
+
+        executor.shutdown();
+        try {
+            executor.awaitTermination(100, TimeUnit.SECONDS);
+        } catch (InterruptedException ex) {
+            System.err.println("timeout reached");
+        }
+        LOG.info("end");
+
+        Iterator<BigInteger> itr = primeList.getIterator();
+        for (int i = 1; itr.hasNext(); i++) {
+            LOG.info(i + ": " + itr.next().toString().substring(0, 20) + "...");
+        }
+
     }
 }

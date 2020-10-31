@@ -23,26 +23,38 @@ import java.util.concurrent.Callable;
  */
 public final class Producer implements Callable<Long> {
 
+    private final Object lock;
     private final List<Integer> list;
     private final int maxRange;
 
     /**
      * Erzeugt einen Produzent, der eine bestimmte Anzahl Integer-Werte produziert.
+     *
+     * @param lock Lock ressource for concurrent acces to list
      * @param list Queue zum Speichern der Integer-Werte.
      * @param max Anzahl Integer-Werte.
      */
-    public Producer(final List<Integer> list, final int max) {
+    public Producer(final List<Integer> list, final Object lock, final int max) {
+        this.lock = lock;
         this.list = list;
         this.maxRange = max;
     }
 
     /**
      * Liefert die Summe aller zusammengezählter Integer Werte.
+     *
      * @return Summe.
      * @throws java.lang.Exception falls Ausnahmen passieren.
      */
     @Override
     public Long call() throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        long sum = 0;
+        for (int i = 1; i <= this.maxRange; i++) {
+            sum += i;
+            synchronized (lock) {
+                list.add(i);
+            }
+        }
+        return sum;
     }
 }

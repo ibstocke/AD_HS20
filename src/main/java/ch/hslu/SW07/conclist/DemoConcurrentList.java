@@ -47,13 +47,16 @@ public final class DemoConcurrentList {
      * @throws java.util.concurrent.ExecutionException bei Excecution-Fehler.
      */
     public static void main(final String args[]) throws InterruptedException, ExecutionException {
+        final Object lock = new Object();
         final List<Integer> list = new LinkedList<>();
         final ExecutorService executor = Executors.newCachedThreadPool();
         final List<Future<Long>> futures = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            futures.add(executor.submit(new Producer(list, 1000)));
+        for (int i = 0; i < 5; i++) {
+            futures.add(executor.submit(new Producer(list, lock, 1000)));
         }
+
         Iterator<Future<Long>> iterator = futures.iterator();
+
         long totProd = 0;
         while (iterator.hasNext()) {
             long sum = iterator.next().get();
@@ -61,7 +64,8 @@ public final class DemoConcurrentList {
             LOG.info("prod sum = " + sum);
         }
         LOG.info("prod tot = " + totProd);
-        long totCons = executor.submit(new Consumer(list)).get();
+        final long totCons = executor.submit(new Consumer(list)).get();
+        //long totCons = executor.submit(new Consumer(list)).get();
         LOG.info("cons tot = " + totCons);
         executor.shutdown();
     }
