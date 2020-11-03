@@ -45,7 +45,7 @@ public final class PrimeCheck {
         final int iNoOfPrimesRequired = 100;
         PrimeList primeList = new PrimeList(iNoOfPrimesRequired);
 
-        final int iCores = Runtime.getRuntime().availableProcessors();
+        final int iCores = Runtime.getRuntime().availableProcessors() + 1;
 
         final ExecutorService executor = Executors.newCachedThreadPool();
         for (int i = 0; i < iCores; i++) {

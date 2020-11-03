@@ -44,18 +44,21 @@ public final class SpeedCount {
      */
     public static long speedTest(Counter counter, int counts, int tester) {
         final ExecutorService executor = Executors.newCachedThreadPool();
+        long duration = System.currentTimeMillis();
+
         for (int i = 0; i < tester; i++) {
             executor.submit(new CountTask(counter, counts));
         }
-        long duration = System.currentTimeMillis();
+
         executor.shutdown();
+
         try {
             executor.awaitTermination(10, TimeUnit.SECONDS);
+            duration = System.currentTimeMillis() - duration;
         } catch (InterruptedException ex) {
             System.err.println(ex);
+            duration = -1;
         }
-
-        duration = System.currentTimeMillis() - duration;
 
         return duration;
     }
