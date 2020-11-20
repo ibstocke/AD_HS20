@@ -15,6 +15,7 @@
  */
 package ch.hslu.SW10.quicksort;
 
+import ch.hslu.SW0809.sorting.MyTimer;
 import ch.hslu.SW10.array.init.RandomInitTask;
 import ch.hslu.SW10.array.sum.SumTask;
 import java.util.Arrays;
@@ -41,37 +42,45 @@ public final class DemoQuicksort {
      * @param args not used.
      */
     public static void main(final String[] args) {
-        final int size = 300_000_000;
-        final int[] array = new int[size];
+        final int size = 10_000_013;
+        final int[] arrayOrig = new int[size];
+        MyTimer myTimer = new MyTimer();
+        long lTimePassed;
         final ForkJoinPool pool = new ForkJoinPool();
-        RandomInitTask initTask = new RandomInitTask(array, 100);
+
+        RandomInitTask initTask = new RandomInitTask(arrayOrig, size * 5);
         pool.invoke(initTask);
-        SumTask sumTask = new SumTask(array);
+        SumTask sumTask = new SumTask(arrayOrig);
         long result = pool.invoke(sumTask);
         LOG.info("Init. Checksum : " + result);
+
+        int[] array = Arrays.copyOf(arrayOrig, arrayOrig.length);
+        myTimer.startTimer();
         final QuicksortTask sortTask = new QuicksortTask(array);
         pool.invoke(sortTask);
-        LOG.info("QuicksortTask  : ? sec.");
+        myTimer.stopTimer();
+        lTimePassed = myTimer.getTimePassed();
+        LOG.info("QuicksortTask  : " + lTimePassed + " ms");
         sumTask = new SumTask(array);
         result = pool.invoke(sumTask);
         LOG.info("Conc. Checksum : " + result);
-        initTask = new RandomInitTask(array, 100);
-        pool.invoke(initTask);
-        sumTask = new SumTask(array);
-        result = pool.invoke(sumTask);
-        LOG.info("Init. Checksum : " + result);
+
+        array = Arrays.copyOf(arrayOrig, arrayOrig.length);
+        myTimer.startTimer();
         QuicksortRecursive.quicksort(array);
-        LOG.info("QuicksortRec.  : ? sec.");
+        myTimer.stopTimer();
+        lTimePassed = myTimer.getTimePassed();
+        LOG.info("QuicksortRec.  : " + lTimePassed + " ms");
         sumTask = new SumTask(array);
         result = pool.invoke(sumTask);
         LOG.info("Recu. Checksum : " + result);
-        initTask = new RandomInitTask(array, 100);
-        pool.invoke(initTask);
-        sumTask = new SumTask(array);
-        result = pool.invoke(sumTask);
-        LOG.info("Init. checksum : " + result);
+
+        array = Arrays.copyOf(arrayOrig, arrayOrig.length);
+        myTimer.startTimer();
         Arrays.sort(array);
-        LOG.info("Arrays.sort    : ? sec.");
+        myTimer.stopTimer();
+        lTimePassed = myTimer.getTimePassed();
+        LOG.info("Arrays.sort    : " + lTimePassed + " ms");
         sumTask = new SumTask(array);
         result = pool.invoke(sumTask);
         LOG.info("Sort checksum  : " + result);

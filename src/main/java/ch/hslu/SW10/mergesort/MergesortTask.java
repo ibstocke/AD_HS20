@@ -24,33 +24,35 @@ import java.util.concurrent.RecursiveAction;
 @SuppressWarnings("serial")
 public final class MergesortTask extends RecursiveAction {
 
-    private static final int THRESHOLD = 50;
     private final int[] array;
     private final int min;
     private final int max;
+    private final int threshold;
 
     /**
      * Erzeugt einen Array-Sortier Task.
      *
      * @param array Interger-Array.
+     * @param threshold threshold
      */
-    public MergesortTask(final int[] array) {
-        this(array, 0, array.length);
+    public MergesortTask(final int[] array, int threshold) {
+        this(array, 0, array.length, threshold);
     }
 
-    private MergesortTask(final int[] array, final int min, final int max) {
+    private MergesortTask(final int[] array, final int min, final int max, final int threshold) {
         this.array = array;
         this.min = min;
         this.max = max;
+        this.threshold = threshold;
     }
 
     @Override
     protected void compute() {
-        if (max - min < THRESHOLD) {
+        if (max - min < this.threshold) {
             Arrays.sort(array, min, max);
         } else {
             final int mid = min + (max - min) / 2;
-            invokeAll(new MergesortTask(array, min, mid), new MergesortTask(array, mid, max));
+            invokeAll(new MergesortTask(array, min, mid, this.threshold), new MergesortTask(array, mid, max, this.threshold));
             merge(min, mid, max);
         }
     }

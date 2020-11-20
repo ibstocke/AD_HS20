@@ -15,7 +15,9 @@
  */
 package ch.hslu.SW10.findfile;
 
+import ch.hslu.SW0809.sorting.MyTimer;
 import java.io.File;
+import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,13 +41,27 @@ public final class DemoFindFile {
      */
     public static void main(String[] args) {
         final String search = "test.properties";
+        MyTimer myTimer = new MyTimer();
         final File rootDir = new File(System.getProperty("user.home"));
         LOG.info("Start searching '" + search + "' recurive in '" + rootDir + "'");
+        myTimer.startTimer();
         FindFile.findFile(search, rootDir);
-        LOG.info("Found in ?");
+        myTimer.stopTimer();
+        LOG.info("Found in : " + myTimer.getTimePassed() + " ms");
         LOG.info("Find " + search + " concurrent in " + rootDir);
+        myTimer.startTimer();
         final FindFileTask root = new FindFileTask(search, rootDir);
-        LOG.info(root.invoke());
-        LOG.info("Found in ?");
+        root.invoke();
+        ArrayList<String> arrResults = root.getRawResult();
+        myTimer.stopTimer();
+        String strResult = "";
+        if (arrResults.isEmpty()) {
+            LOG.info("not found " + search);
+        } else {
+            for (String str : arrResults) {
+                LOG.info(str);
+            }
+        }
+        LOG.info("Found in : " + myTimer.getTimePassed() + " ms");
     }
 }

@@ -21,8 +21,7 @@ package ch.hslu.SW10.quicksort;
 public class QuicksortRecursive {
 
     /**
-     * public method exposed to client, sorts given array using QuickSort
-     * Algorithm in Java.
+     * public method exposed to client, sorts given array using QuickSort Algorithm in Java.
      *
      * @param array input array.
      */
@@ -38,12 +37,63 @@ public class QuicksortRecursive {
      * @param endIdx end index of the array.
      */
     public static void quicksort(int[] array, int startIdx, int endIdx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int up = startIdx;          // linke Grenze
+        int down = endIdx - 1;   // rechte Grenze (ohne Trennelement)
+        int iLength = endIdx - startIdx + 1;
+
+        if (iLength < 25) {
+            //selectionsort
+            int iTmpMinIndex;
+            int iMinValue;
+            for (int i = startIdx; i < endIdx; i++) {
+                iMinValue = array[i];
+                iTmpMinIndex = i;
+                for (int j = i + 1; j <= endIdx; j++) {
+                    if (iMinValue > array[j]) {
+                        iMinValue = array[j];
+                        iTmpMinIndex = j;
+                    }
+                }
+                array[iTmpMinIndex] = array[i];
+                array[i] = iMinValue;
+            }
+
+        } else {
+            //quicksort
+            int t = array[endIdx];      // rechtes Element als Trennelement
+
+            boolean allChecked = false;
+            do {
+                // suche grösseres (>=) Element von links an
+                while (array[up] < t) {
+                    up++;
+                }
+                // suche echt kleineres (<) Element von rechts an
+                while ((array[down] >= t) && (down > up)) {
+                    down--;
+                }
+                // solange keine Überschneidung
+                if (down > up) {
+                    exchange(array, up, down);
+                    up++;           // linke und rechte Grenze verschieben
+                    down--;
+                } else {
+                    allChecked = true;  // Austauschen beendet
+                }
+            } while (!allChecked);
+            exchange(array, up, endIdx);       // Trennelement an endgültige Position (a[up])
+            if (startIdx < (up - 1)) {
+                quicksort(array, startIdx, (up - 1));   // linke Hälfte
+            }
+            if ((up + 1) < endIdx) {
+                quicksort(array, (up + 1), endIdx);   // rechte Hälfte, ohne T’Elt.
+            }
+        }
     }
 
     /**
-     * Divides array from pivot, left side contains elements less than Pivot
-     * while right side contains elements greater than pivot.
+     * Divides array from pivot, left side contains elements less than Pivot while right side contains elements greater
+     * than pivot.
      *
      * @param array array to partitioned.
      * @param left lower bound of the array.
@@ -51,7 +101,53 @@ public class QuicksortRecursive {
      * @return the partition index.
      */
     public static int partition(int[] array, int left, int right) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int up = left;          // linke Grenze
+        int down = right - 1;   // rechte Grenze (ohne Trennelement)
+        int lenght = right - left;
+
+        int t;
+        //median of three
+        if (lenght >= 3) {
+            if (array[left] > array[(right + left) / 2]) {
+                if (array[(right + left) / 2] > array[right]) {
+                    exchange(array, (right + left) / 2, right);
+                } else if (array[left] <= array[right]) {
+                    exchange(array, left, right);
+                }
+            } else {
+                if (array[left] > array[right]) {
+                    exchange(array, left, right);
+                } else if (array[(right + left) / 2] <= array[right]) {
+                    exchange(array, (right + left) / 2, right);
+                }
+            }
+        }
+
+        t = array[right];
+
+        boolean allChecked = false;
+
+        do {
+            // suche grösseres (>=) Element von links an
+            while (array[up] < t) {
+                up++;
+            }
+            // suche echt kleineres (<) Element von rechts an
+            while ((array[down] >= t) && (down > up)) {
+                down--;
+            }
+            // solange keine Überschneidung
+            if (down > up) {
+                exchange(array, up, down);
+                up++;           // linke und rechte Grenze verschieben
+                down--;
+            } else {
+                allChecked = true;  // Austauschen beendet
+            }
+        } while (!allChecked);
+        exchange(array, up, right);
+
+        return up;
     }
 
     private static void exchange(final int[] array, final int i, final int j) {

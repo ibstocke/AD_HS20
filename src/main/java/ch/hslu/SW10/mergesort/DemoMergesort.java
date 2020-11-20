@@ -15,8 +15,9 @@
  */
 package ch.hslu.SW10.mergesort;
 
+import ch.hslu.SW0809.sorting.MyTimer;
 import ch.hslu.SW10.array.init.RandomInitTask;
-import ch.hslu.SW10.array.sum.SumTask;
+import java.util.Arrays;
 import java.util.concurrent.ForkJoinPool;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,29 +41,50 @@ public final class DemoMergesort {
      * @param args not used.
      */
     public static void main(final String[] args) {
-        final int size = 300_000;
-        final int[] array = new int[size];
+        final int size = 10_000_000;
+        long lTimePassed;
+        final int[] arrayOrig = new int[size];
         final ForkJoinPool pool = new ForkJoinPool();
-        RandomInitTask initTask = new RandomInitTask(array, 100);
+        RandomInitTask initTask = new RandomInitTask(arrayOrig, 100);
+        MyTimer myTimer = new MyTimer();
         pool.invoke(initTask);
-        SumTask sumTask = new SumTask(array);
-        long result = pool.invoke(sumTask);
-        LOG.info("Init. Checksum  : " + result);
-        final MergesortTask sortTask = new MergesortTask(array);
-        pool.invoke(sortTask);
-        LOG.info("Conc. Mergesort : ? sec.");
-        sumTask = new SumTask(array);
-        result = pool.invoke(sumTask);
-        LOG.info("Merge Checksum  : " + result);
-        initTask = new RandomInitTask(array, 100);
-        pool.invoke(initTask);
-        sumTask = new SumTask(array);
-        result = pool.invoke(sumTask);
-        LOG.info("Init. checksum  : " + result);
+        //SumTask sumTask = new SumTask(arrayOrig);
+        //long result = pool.invoke(sumTask);
+        //LOG.info("Init. Checksum  : " + result);
+
+        int[] array;
+        final int iCores = Runtime.getRuntime().availableProcessors();
+        int iStartThreshold = size / iCores;
+
+        for (int iThreshold = iStartThreshold - 10; iThreshold < iStartThreshold + 12; iThreshold = iThreshold + 2) {
+            array = Arrays.copyOf(arrayOrig, arrayOrig.length);
+
+            myTimer.startTimer();
+            final MergesortTask sortTask = new MergesortTask(array, iThreshold);
+            pool.invoke(sortTask);
+            myTimer.stopTimer();
+            lTimePassed = myTimer.getTimePassed();
+            LOG.info("Conc. Mergesort[" + iThreshold + "] : " + lTimePassed + " ms");
+
+            //sumTask = new SumTask(array);
+            //result = pool.invoke(sumTask);
+            //LOG.info("Merge Checksum  : " + result);
+            //initTask = new RandomInitTask(array, 100);
+            //pool.invoke(initTask);
+            //sumTask = new SumTask(array);
+            //result = pool.invoke(sumTask);
+            //LOG.info("Init. checksum  : " + result);
+        }
+        array = Arrays.copyOf(arrayOrig, arrayOrig.length);
+
+        myTimer.startTimer();
         MergesortRecursive.mergeSort(array);
-        LOG.info("MergesortRec.   : ? sec.");
-        sumTask = new SumTask(array);
-        result = pool.invoke(sumTask);
-        LOG.info("Sort checksum   : " + result);
+        myTimer.stopTimer();
+        lTimePassed = myTimer.getTimePassed();
+
+        LOG.info("MergesortRec.   : " + lTimePassed + " ms");
+        //sumTask = new SumTask(array);
+        //result = pool.invoke(sumTask);
+        //LOG.info("Sort checksum   : " + result);
     }
 }

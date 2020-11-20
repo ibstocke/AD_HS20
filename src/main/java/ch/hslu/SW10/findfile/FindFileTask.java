@@ -16,18 +16,21 @@
 package ch.hslu.SW10.findfile;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.CountedCompleter;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * Codevorlage zu CountedCompleter für eine Dateisuche.
  */
 @SuppressWarnings("serial")
-public final class FindFileTask extends CountedCompleter<String> {
+public final class FindFileTask extends CountedCompleter<ArrayList<String>> {
 
     private final String regex;
     private final File dir;
-    private final AtomicReference<String> result;
+    private final BlockingDeque<String> strList;
 
     /**
      * Erzeugt eine File-Such-Aufgabe.
@@ -36,24 +39,42 @@ public final class FindFileTask extends CountedCompleter<String> {
      * @param dir Verzeichnis in dem das File gesucht wird.
      */
     public FindFileTask(String regex, File dir) {
-        this(null, regex, dir, new AtomicReference<>(null));
+        this(null, regex, dir, new LinkedBlockingDeque<String>());
     }
 
-    private FindFileTask(final CountedCompleter<?> parent, final String regex, final File dir,
-            final AtomicReference<String> result) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private FindFileTask(final CountedCompleter<?> parent, final String regex, final File dir, final BlockingDeque<String> strList) {
+        super(parent);
+        this.dir = dir;
+        this.regex = regex;
+        this.strList = strList;
     }
 
     @Override
     public void compute() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        final File[] list = dir.listFiles();
+
+        if (list != null) {
+            for (File file : list) {
+                if (file.isDirectory()) {
+                    //System.out.println("Search in directory: " + file.getName());
+                    final FindFileTask root = new FindFileTask(this, regex, file, this.strList);
+                    this.addToPendingCount(1);
+                    root.fork();
+                } else if (regex.equalsIgnoreCase(file.getName())) {
+                    strList.add(dir.getAbsolutePath());
+                }
+            }
+        }
+        this.tryComplete();
     }
 
     @Override
-    public String getRawResult() {
-        if (result != null) {
-            return result.get();
+    public ArrayList<String> getRawResult() {
+        ArrayList<String> strResults = new ArrayList<>();
+        Iterator<String> itr = this.strList.iterator();
+        while (itr.hasNext()) {
+            strResults.add(itr.next());
         }
-        return null;
+        return strResults;
     }
 }

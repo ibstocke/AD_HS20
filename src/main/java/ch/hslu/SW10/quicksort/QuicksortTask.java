@@ -15,6 +15,7 @@
  */
 package ch.hslu.SW10.quicksort;
 
+import java.util.ArrayList;
 import java.util.concurrent.RecursiveAction;
 
 /**
@@ -23,7 +24,7 @@ import java.util.concurrent.RecursiveAction;
 @SuppressWarnings("serial")
 public final class QuicksortTask extends RecursiveAction {
 
-    private static final int THRESHOLD = 1;
+    private static final int THRESHOLD = 50_000;
     private final int[] array;
     private final int min;
     private final int max;
@@ -45,6 +46,22 @@ public final class QuicksortTask extends RecursiveAction {
 
     @Override
     protected void compute() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (max - min < THRESHOLD) {
+            QuicksortRecursive.quicksort(array, min, max);
+        } else {
+            ArrayList<QuicksortTask> taskList = new ArrayList<>();
+
+            int t = QuicksortRecursive.partition(array, min, max);
+            if (t - 1 > min) {
+                taskList.add(new QuicksortTask(array, min, t - 1));
+            }
+            if (t + 1 < max) {
+                taskList.add(new QuicksortTask(array, t + 1, max));
+            }
+
+            if (!taskList.isEmpty()) {
+                invokeAll(taskList);
+            }
+        }
     }
 }

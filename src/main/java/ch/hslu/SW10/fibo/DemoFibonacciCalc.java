@@ -15,6 +15,7 @@
  */
 package ch.hslu.SW10.fibo;
 
+import ch.hslu.SW0809.sorting.MyTimer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -64,16 +65,26 @@ public final class DemoFibonacciCalc {
      */
     public static void main(final String[] args) {
         final int n = 42;
-        final FibonacciTask task = new FibonacciTask(n);
+        MyTimer myTimer = new MyTimer();
+
         LOG.info("fibo(" + n + ") start...");
+        myTimer.startTimer();
+        final FibonacciTask task = new FibonacciTask(n);
         long result = task.invoke();
+        myTimer.stopTimer();
         LOG.info("Conc. recursive = " + result);
-        LOG.info("Conc. recursive : ? msec.");
+        LOG.info("Conc. recursive : " + myTimer.getTimePassed() + " ms");
+
+        myTimer.startTimer();
         result = fiboIterative(n);
+        myTimer.stopTimer();
         LOG.info("Func. iterative = " + result);
-        LOG.info("Func. iterative : ? msec.");
+        LOG.info("Func. iterative : " + myTimer.getTimePassed() + " ms");
+
+        myTimer.startTimer();
         result = fiboRecursive(n);
+        myTimer.stopTimer();
         LOG.info("Func. recursive = " + result);
-        LOG.info("Func. recursive :  ? sec.");
+        LOG.info("Func. recursive : " + myTimer.getTimePassed() + " ms");
     }
 }
